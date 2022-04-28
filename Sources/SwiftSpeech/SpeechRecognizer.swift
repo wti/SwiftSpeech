@@ -113,13 +113,15 @@ public class SpeechRecognizer {
         
         self.audioEngine.stop()
         self.audioEngine.inputNode.removeTap(onBus: 0)
-        
+
+        #if os(iOS)
         do {
             try sessionConfiguration.audioSessionConfiguration.onStopRecording(AVAudioSession.sharedInstance())
         } catch {
             resultSubject.send(completion: .failure(error))
             SpeechRecognizer.remove(id: self.id)
         }
+        #endif
         
     }
     

@@ -113,6 +113,22 @@ public extension SwiftSpeech.Session {
          */
         public var interactionIdentifier: String? = nil
         
+        public init(
+            locale: Locale = .current,
+            taskHint: SFSpeechRecognitionTaskHint = .unspecified,
+            shouldReportPartialResults: Bool = true,
+            requiresOnDeviceRecognition: Bool = false,
+            contextualStrings: [String] = [],
+            interactionIdentifier: String? = nil
+        ) {
+            self.locale = locale
+            self.taskHint = taskHint
+            self.shouldReportPartialResults = shouldReportPartialResults
+            self.requiresOnDeviceRecognition = requiresOnDeviceRecognition
+            self.contextualStrings = contextualStrings
+            self.interactionIdentifier = interactionIdentifier
+        }
+        #if os(iOS)
         /**
          A configuration for configuring/activating/deactivating your app's `AVAudioSession` at the appropriate time.
          The default value is `.recordOnly`, which activate/deactivate a **record only** audio session when a recording session starts/stops.
@@ -138,9 +154,11 @@ public extension SwiftSpeech.Session {
             self.interactionIdentifier = interactionIdentifier
             self.audioSessionConfiguration = audioSessionConfiguration
         }
+        #endif
     }
 }
 
+#if os(iOS)
 public extension SwiftSpeech.Session {
     struct AudioSessionConfiguration {
         
@@ -184,3 +202,4 @@ public extension SwiftSpeech.Session {
         
     }
 }
+#endif

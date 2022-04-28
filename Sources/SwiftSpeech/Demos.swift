@@ -134,8 +134,10 @@ public extension SwiftSpeech.Demos {
                                 }
                         }.padding(20),
                     alignment: .bottom
-                ).navigationBarTitle(Text("SwiftSpeech"))
-
+                )
+                #if os(iOS)
+                .navigationBarTitle(Text("SwiftSpeech"))
+                #endif
             }.onAppear {
                 SwiftSpeech.requestSpeechRecognitionAuthorization()
             }
