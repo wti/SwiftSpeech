@@ -30,7 +30,19 @@ public class SpeechRecognizer {
     private let audioEngine = AVAudioEngine()
     
     private let resultSubject = PassthroughSubject<SFSpeechRecognitionResult, Error>()
-    
+
+    @available(iOS 17, *)
+    private var lmConfiguration: SFSpeechLanguageModel.Configuration {
+        let outputDir = FileManager.default.urls(
+          for: .cachesDirectory,
+          in: .userDomainMask).first!
+        let dynamicLanguageModel = outputDir.appendingPathComponent("LM")
+        let dynamicVocabulary = outputDir.appendingPathComponent("Vocab")
+        return SFSpeechLanguageModel.Configuration(
+          languageModel: dynamicLanguageModel,
+          vocabulary: dynamicVocabulary)
+    }
+
     public var resultPublisher: AnyPublisher<SFSpeechRecognitionResult, Error> {
         resultSubject.eraseToAnyPublisher()
     }
@@ -50,15 +62,29 @@ public class SpeechRecognizer {
             
             // Configure the audio session for the app if it's on iOS/Mac Catalyst.
             #if canImport(UIKit)
-            try sessionConfiguration.audioSessionConfiguration.onStartRecording(AVAudioSession.sharedInstance())
+            let audioSession = AVAudioSession.sharedInstance()
+            // carpoff
+            //try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            //try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            try sessionConfiguration.audioSessionConfiguration
+              .onStartRecording(audioSession)
             #endif
             
             let inputNode = audioEngine.inputNode
 
             // Create and configure the speech recognition request.
             recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-            guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create a SFSpeechAudioBufferRecognitionRequest object") }
-            
+            guard let recognitionRequest = recognitionRequest else { 
+              fatalError("Unable to create a SFSpeechAudioBufferRecognitionRequest object")
+            }
+            // Keep speech recognition data on device
+            if #available(iOS 13, *) {
+                //carpoff recognitionRequest.requiresOnDeviceRecognition = true
+                if #available(iOS 17, *) {
+                    //carpoff recognitionRequest.customizedLanguageModel = self.lmConfiguration
+                }
+              }
+
             // Use `sessionConfiguration` to configure the recognition request
             recognitionRequest.shouldReportPartialResults = sessionConfiguration.shouldReportPartialResults
             recognitionRequest.requiresOnDeviceRecognition = sessionConfiguration.requiresOnDeviceRecognition
